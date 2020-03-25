@@ -23,6 +23,7 @@ func init() {
 	zhttp.FuncMap["validate"] = zvalidate.TemplateError
 	zhttp.FuncMap["has_errors"] = zvalidate.TemplateHasErrors
 	zhttp.FuncMap["error_code"] = func(err error) string { return zhttp.ErrorCode(err) }
+	zhttp.FuncMap["now"] = func() time.Time { return Now() }
 	zhttp.FuncMap["parent_site"] = func(ctx context.Context, id *int64) string {
 		var s Site
 		err := s.ByID(ctx, *id)
