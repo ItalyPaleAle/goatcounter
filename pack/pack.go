@@ -2134,6 +2134,21 @@ h1 a:after, h2 a:after, h3 a:after, h4 a:after, h5 a:after, h6 a:after {
 				return s[i].substr(name.length + 1)
 	}
 
+	// Track click events.
+	window.goatcounter.bind_events = function() {
+		document.querySelectorAll("*[data-goatcounter-click]").forEach(function(elem) {
+			item.addEventListener('click', function(e) {
+				goatcounter.count({
+					event:    true,
+					path:     (elem.dataset.goatcounterClick || elem.href || ''),
+					referral: (elem.dataset.goatcounterReferral || ''),
+				})
+			}, false)
+		})
+	}
+
+	if (!goatcounter.no_events)
+		goatcounter.bind_events()
 	if (!goatcounter.no_onload)
 		if (document.body === null)
 			document.addEventListener('DOMContentLoaded', function() { goatcounter.count() }, false)
@@ -14690,14 +14705,37 @@ script-src  https://{{.CountDomain}}
 img-src     {{.Site.URL}}/count
 </pre>
 
+<h2 id="events">Events <a href="#events"></a></h2>
+<p>You can send data as events by setting the <code>event</code> parameter; data
+sent as event is shown in the overview but not counted in the browser, screen
+size, location, or top referral stats.</p>
+
+<p>As a convenience, GoatCounter will automatically bind a click event on every
+element with <code>data-goatcounter-click</code>; for example to track clicks to
+an external link as <code>ext-example.com</code>:</p>
+
+<pre>
+&lt;a href="https://example.com" data-goatcounter-click="ext-example.com"&gt;Example&lt;/a&gt;
+</pre>
+
+<p>The <code>href</code> will be used as the event name if
+<code>data-goatcounter-click</code> is empty.</p>
+
+<p>You can use <code>data-goatcounter-referral</code> to send a referral:</p>
+<pre>
+&lt;a href="https://example.com" data-goatcounter-click="ext-example.com"
+   data-goatcounter-referral="hello"&gt;Example&lt;/a&gt;
+</pre>
+
 <h2 id="customizing">Customizing <a href="#customizing"></a></h2>
 <p>Customisation is done with the <code>window.goatcounter</code> object; the
 following keys are supported:</p>
 
 <h3 id="settings">Settings <a href="#settings"></a></h3>
 <ul>
-	<li><code>no_onload</code> – Don’t do anything on page load. If you want to
-		call <code>count()</code> manually.</li>
+	<li><code>no_onload</code> – Don’t track the pageview on page load. If you
+		want to call <code>count()</code> manually.</li>
+	<li><code>no_events</code> – Don’t bind click events.</li>
 	<li><code>allow_local</code> – Allow requests from local addresses
 		(<code>localhost</code>, <code>192.168.0.0</code>, etc.) for testing
 		the integration locally.</li>
@@ -14750,6 +14788,11 @@ solve this, use <code>setInterval</code> to wait until it’s available:</p>
 
 <p>The default implementation already handles this, and you only need to worry
 about this if you call <code>count()</code> manually.</p>
+
+<h4 id="bind_events"><code>bind_events()</code> <a href="#bind_events"></a></h4>
+<p>Bind a click event to every element with <code>data-goatcounter-click</code>.
+Called on page load unless <code>no_events</code> is set. You may need to call
+this manually if you insert elements after the page loads.</p>
 
 <h4 id="get_query"><code>get_query(name)</code> <a href="#get_query"></a></h4>
 <p>Get a single query parameter from the current page’s URL; returns

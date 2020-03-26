@@ -131,6 +131,9 @@ func persistAndStat(ctx context.Context) error {
 
 	grouped := make(map[int64][]goatcounter.Hit)
 	for _, h := range hits {
+		if h.Event || h.Bot > 0 {
+			continue
+		}
 		grouped[h.Site] = append(grouped[h.Site], h)
 	}
 	for siteID, hits := range grouped {

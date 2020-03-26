@@ -88,6 +88,21 @@
 				return s[i].substr(name.length + 1)
 	}
 
+	// Track click events.
+	window.goatcounter.bind_events = function() {
+		document.querySelectorAll("*[data-goatcounter-click]").forEach(function(elem) {
+			item.addEventListener('click', function(e) {
+				goatcounter.count({
+					event:    true,
+					path:     (elem.dataset.goatcounterClick || elem.href || ''),
+					referral: (elem.dataset.goatcounterReferral || ''),
+				})
+			}, false)
+		})
+	}
+
+	if (!goatcounter.no_events)
+		goatcounter.bind_events()
 	if (!goatcounter.no_onload)
 		if (document.body === null)
 			document.addEventListener('DOMContentLoaded', function() { goatcounter.count() }, false)
