@@ -42,17 +42,17 @@ type Hit struct {
 	Path  string            `db:"path" json:"p,omitempty"`
 	Title string            `db:"title" json:"t,omitempty"`
 	Ref   string            `db:"ref" json:"r,omitempty"`
-	Event bool              `db:"event" json:"e,omitempty"`
+	Event sqlutil.Bool      `db:"event" json:"e,omitempty"`
 	Size  sqlutil.FloatList `db:"size" json:"s,omitempty"`
 
-	RefParams      *string   `db:"ref_params" json:"-"`
-	RefOriginal    *string   `db:"ref_original" json:"-"`
-	RefScheme      *string   `db:"ref_scheme" json:"-"`
-	Browser        string    `db:"browser" json:"-"`
-	Location       string    `db:"location" json:"-"`
-	StartedSession bool      `db:"started_session" json:"-"`
-	Bot            int       `db:"bot" json:"-"`
-	CreatedAt      time.Time `db:"created_at" json:"-"`
+	RefParams      *string      `db:"ref_params" json:"-"`
+	RefOriginal    *string      `db:"ref_original" json:"-"`
+	RefScheme      *string      `db:"ref_scheme" json:"-"`
+	Browser        string       `db:"browser" json:"-"`
+	Location       string       `db:"location" json:"-"`
+	StartedSession sqlutil.Bool `db:"started_session" json:"-"`
+	Bot            int          `db:"bot" json:"-"`
+	CreatedAt      time.Time    `db:"created_at" json:"-"`
 
 	RefURL      *url.URL `db:"-" json:"-"` // Parsed Ref
 	UsageDomain string   `db:"-" json:"-"` // Track referrer for usage.

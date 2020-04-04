@@ -36,7 +36,7 @@ func updateHitStats(ctx context.Context, hits []goatcounter.Hit) error {
 		}
 		grouped := map[string]gt{}
 		for _, h := range hits {
-			if h.Bot > 0 {
+			if h.Event || h.Bot > 0 {
 				continue
 			}
 

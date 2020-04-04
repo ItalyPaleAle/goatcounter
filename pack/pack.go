@@ -14706,19 +14706,19 @@ img-src     {{.Site.URL}}/count
 </pre>
 
 <h2 id="events">Events <a href="#events"></a></h2>
-<p>You can send data as events by setting the <code>event</code> parameter; data
-sent as event is shown in the overview but not counted in the browser, screen
-size, location, or top referral stats.</p>
+<p>You can send data as events instead of pageviews; event are shown in the
+overview but not counted in the browser, screen size, location, or top referral
+stats.</p>
 
-<p>As a convenience, GoatCounter will automatically bind a click event on every
-element with <code>data-goatcounter-click</code>; for example to track clicks to
-an external link as <code>ext-example.com</code>:</p>
+<p>GoatCounter will automatically bind a click event on every element with the
+<code>data-goatcounter-click</code> attribute; for example to track clicks to an
+external link as <code>ext-example.com</code>:</p>
 
 <pre>
 &lt;a href="https://example.com" data-goatcounter-click="ext-example.com"&gt;Example&lt;/a&gt;
 </pre>
 
-<p>The <code>href</code> will be used as the event name if
+<p>The <code>href</code> attribute will be used if
 <code>data-goatcounter-click</code> is empty.</p>
 
 <p>You can use <code>data-goatcounter-referral</code> to send a referral:</p>
@@ -14726,6 +14726,7 @@ an external link as <code>ext-example.com</code>:</p>
 &lt;a href="https://example.com" data-goatcounter-click="ext-example.com"
    data-goatcounter-referral="hello"&gt;Example&lt;/a&gt;
 </pre>
+
 
 <h2 id="customizing">Customizing <a href="#customizing"></a></h2>
 <p>Customisation is done with the <code>window.goatcounter</code> object; the
@@ -14887,6 +14888,19 @@ parameters:</p>
 	});
 &lt;/script&gt;
 {{template "code" .}}</pre>
+
+<h3 id="custom-events"> Custom events <a href="#custom-events"></a></h3>
+<p>You can send an event by setting the <code>event</code> parameter to
+<code>true</code> in <code>count()</code>. For example:</p>
+
+<pre>$('a').on('click', function(e) {
+	window.goatcounter.count({
+		path:  $(this).attr('href'),
+		event: true,
+	});
+})</pre>
+
+<p>Note that the <code>path</code> doubles as the event name.</p>
 
 <h2 id="advanced">Advanced integrations <a href="#advanced"></a></h2>
 
