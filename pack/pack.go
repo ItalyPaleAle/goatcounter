@@ -757,6 +757,11 @@ commit;
 	insert into version values ('2020-03-29-1-page_cost');
 commit;
 `),
+	"db/migrate/pgsql/2020-04-06-1-event.sql": []byte(`begin;
+	alter table hit_stats add column event integer default 0;
+	insert into version values ('2020-04-06-1-event');
+commit;
+`),
 }
 
 var MigrationsSQLite = map[string][]byte{
@@ -1546,6 +1551,11 @@ commit;
 commit;
 `),
 	"db/migrate/sqlite/2020-03-27-1-isbot.sql": []byte(``),
+	"db/migrate/sqlite/2020-04-06-1-event.sql": []byte(`begin;
+	alter table hit_stats add column event integer default 0;
+	insert into version values ('2020-04-06-1-event');
+commit;
+`),
 }
 
 var Public = map[string][]byte{
@@ -13336,6 +13346,8 @@ form .err  { color: red; display: block; }
 	word-break: break-all; /* don't make it wider for very long urls */
 }
 
+.event { background-color: #f6f3da; border-radius: 1em; padding: .1em .3em; }
+
 /* Otherwise .page-title has different vertical alignment? Hmmm... */
 .show-mobile .page-title { vertical-align: top; }
 .show-mobile .page-title+sup { bottom: 2ex; }
@@ -14640,12 +14652,14 @@ var Templates = map[string][]byte{
 		<td class="hide-mobile">
 			<a class="rlink" title="{{$h.Path}}" href="?showrefs={{$h.Path}}&period-start={{tformat $.Site $.PeriodStart ""}}&period-end={{tformat $.Site $.PeriodEnd ""}}#{{$h.Path}}">{{$h.Path}}</a><br>
 			<small class="page-title {{if not $h.Title}}no-title{{end}}" title="{{$h.Title}}">{{if $h.Title}}{{$h.Title}}{{else}}<em>(no title)</em>{{end}}</small>
+			{{if $h.Event}}<sup class="event">event</sup>{{end}}
 			{{if and $.Site.LinkDomain (not $h.Event)}}<sup><a class="go" target="_blank" rel="noopener" href="https://{{$.Site.LinkDomain}}{{$h.Path}}">go</a></sup>{{end}}
 		</td>
 		<td>
 			<div class="show-mobile">
 				<a class="rlink" href="?showrefs={{$h.Path}}&period-start={{tformat $.Site $.PeriodStart ""}}&period-end={{tformat $.Site $.PeriodEnd ""}}#{{$h.Path}}">{{$h.Path}}</a>
 				<small class="page-title {{if not $h.Title}}no-title{{end}}" title="{{$h.Title}}">| {{if $h.Title}}{{$h.Title}}{{else}}<em>(no title)</em>{{end}}</small>
+				{{if $h.Event}}<sup class="event">event</sup>{{end}}
 				{{if and $.Site.LinkDomain (not $h.Event)}}<sup><a class="go" target="_blank" rel="noopener" href="https://{{$.Site.LinkDomain}}{{$h.Path}}">go</a></sup>{{end}}
 			</div>
 			<div class="chart chart-bar">
