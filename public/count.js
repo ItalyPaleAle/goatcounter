@@ -15,6 +15,7 @@
 			t: count_vars.title    || goatcounter.title,
 			e: !!(count_vars.event || goatcounter.event),
 			s: [window.screen.width, window.screen.height, (window.devicePixelRatio || 1)],
+			b: is_bot(),
 		}
 
 		var rcb, pcb, tcb  // Save callbacks to apply later.
@@ -42,6 +43,20 @@
 
 	// Check if a value is "empty" for the purpose of get_data().
 	var is_empty = function(v) { return v === null || v === undefined || typeof(v) === 'function' }
+
+	// Try and detect if this looks like a bot.
+	var is_bot = function() {
+		var w = window
+		if (w.callPhantom || w._phantom || w.phantom)
+			return 50
+		if (w.__nightmare)
+			return 51
+		if (navigator.webdriver)
+			return 52
+		if (document.__selenium_unwrapped || document.__webdriver_evaluate || document.__driver_evaluate)
+			return 53
+		return 0
+	}
 
 	// Object to urlencoded string, starting with a ?.
 	var to_params = function(obj) {
