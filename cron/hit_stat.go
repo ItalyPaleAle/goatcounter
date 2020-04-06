@@ -104,8 +104,8 @@ func existingHitStats(
 		return make([]int, 24), make([]int, 24), "", nil
 	}
 
-	_, err = tx.ExecContext(txctx,
-		`delete from hit_stats where site=$1 and day=$2 and path=$3 and event=$4`,
+	_, err = tx.ExecContext(txctx, `delete from hit_stats where
+		site=$1 and day=$2 and path=$3 and event=$4`,
 		siteID, day, path, event)
 	if err != nil {
 		return nil, nil, "", errors.Wrap(err, "delete")
