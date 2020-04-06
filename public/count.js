@@ -68,6 +68,8 @@
 		if (data.p === null)  // null from user callback.
 			return
 
+		data.rnd = Math.random().toString(36).substr(2, 5)  // Browsers don't always listen to Cache-Control.
+
 		var img = document.createElement('img'),
 		    rm  = function() { if (img && img.parentNode) img.parentNode.removeChild(img) }
 		img.src = endpoint + to_params(data)
@@ -91,13 +93,16 @@
 	// Track click events.
 	window.goatcounter.bind_events = function() {
 		document.querySelectorAll("*[data-goatcounter-click]").forEach(function(elem) {
-			item.addEventListener('click', function(e) {
+			var send = function() {
 				goatcounter.count({
 					event:    true,
 					path:     (elem.dataset.goatcounterClick || elem.href || ''),
+					title:    (elem.dataset.goatcounterTitle || elem.title || ''),
 					referral: (elem.dataset.goatcounterReferral || ''),
 				})
-			}, false)
+			}
+			elem.addEventListener('click', send, false)
+			elem.addEventListener('auxclick', send, false)  // Middle click.
 		})
 	}
 

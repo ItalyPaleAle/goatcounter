@@ -2124,6 +2124,8 @@ h1 a:after, h2 a:after, h3 a:after, h4 a:after, h5 a:after, h6 a:after {
 		if (data.p === null)  // null from user callback.
 			return
 
+		data.rnd = Math.random().toString(36).substr(2, 5)  // Browsers don't always listen to Cache-Control.
+
 		var img = document.createElement('img'),
 		    rm  = function() { if (img && img.parentNode) img.parentNode.removeChild(img) }
 		img.src = endpoint + to_params(data)
@@ -2147,13 +2149,16 @@ h1 a:after, h2 a:after, h3 a:after, h4 a:after, h5 a:after, h6 a:after {
 	// Track click events.
 	window.goatcounter.bind_events = function() {
 		document.querySelectorAll("*[data-goatcounter-click]").forEach(function(elem) {
-			item.addEventListener('click', function(e) {
+			var send = function() {
 				goatcounter.count({
 					event:    true,
 					path:     (elem.dataset.goatcounterClick || elem.href || ''),
+					title:    (elem.dataset.goatcounterTitle || elem.title || ''),
 					referral: (elem.dataset.goatcounterReferral || ''),
 				})
-			}, false)
+			}
+			elem.addEventListener('click', send, false)
+			elem.addEventListener('auxclick', send, false)  // Middle click.
 		})
 	}
 
@@ -14735,12 +14740,18 @@ external link as <code>ext-example.com</code>:</p>
 <p>The <code>href</code> attribute will be used if
 <code>data-goatcounter-click</code> is empty.</p>
 
-<p>You can use <code>data-goatcounter-referral</code> to send a referral:</p>
+<p>You can use <code>data-goatcounter-title</code> and
+<code>data-goatcounter-referral</code> to set the title and/or referral:</p>
 <pre>
 &lt;a href="https://example.com" data-goatcounter-click="ext-example.com"
+   data-goatcounter-title="Example event"
    data-goatcounter-referral="hello"&gt;Example&lt;/a&gt;
 </pre>
 
+<p>The regular <code>title</code> attribute is used if
+<code>data-goatcounter-title</code> is empty, and the
+<code>document.referrer</code> is used if <code>data-goatcounter-referrer</code>
+is empty.</p>
 
 <h2 id="customizing">Customizing <a href="#customizing"></a></h2>
 <p>Customisation is done with the <code>window.goatcounter</code> object; the

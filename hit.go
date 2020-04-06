@@ -54,8 +54,9 @@ type Hit struct {
 	Bot            int          `db:"bot" json:"-"`
 	CreatedAt      time.Time    `db:"created_at" json:"-"`
 
-	RefURL      *url.URL `db:"-" json:"-"` // Parsed Ref
-	UsageDomain string   `db:"-" json:"-"` // Track referrer for usage.
+	RefURL      *url.URL `db:"-" json:"-"`   // Parsed Ref
+	UsageDomain string   `db:"-" json:"-"`   // Track referrer for usage.
+	Random      string   `db:"-" json:"rnd"` // Browser cache buster, as they don't always listen to Cache-Control
 }
 
 var groups = map[string]string{

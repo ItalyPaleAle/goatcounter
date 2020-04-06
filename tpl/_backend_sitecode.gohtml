@@ -33,12 +33,18 @@ external link as <code>ext-example.com</code>:</p>
 <p>The <code>href</code> attribute will be used if
 <code>data-goatcounter-click</code> is empty.</p>
 
-<p>You can use <code>data-goatcounter-referral</code> to send a referral:</p>
+<p>You can use <code>data-goatcounter-title</code> and
+<code>data-goatcounter-referral</code> to set the title and/or referral:</p>
 <pre>
 &lt;a href="https://example.com" data-goatcounter-click="ext-example.com"
+   data-goatcounter-title="Example event"
    data-goatcounter-referral="hello"&gt;Example&lt;/a&gt;
 </pre>
 
+<p>The regular <code>title</code> attribute is used if
+<code>data-goatcounter-title</code> is empty, and the
+<code>document.referrer</code> is used if <code>data-goatcounter-referrer</code>
+is empty.</p>
 
 <h2 id="customizing">Customizing <a href="#customizing"></a></h2>
 <p>Customisation is done with the <code>window.goatcounter</code> object; the
