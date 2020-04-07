@@ -18,11 +18,7 @@ img-src     {{.Site.URL}}/count
 </pre>
 
 <h2 id="events">Events <a href="#events"></a></h2>
-<p>You can send data as events instead of pageviews; event are shown in the
-overview but not counted in the browser, screen size, location, or top referral
-stats.</p>
-
-<p>GoatCounter will automatically bind a click event on every element with the
+<p>GoatCounter will automatically bind a click event on any element with the
 <code>data-goatcounter-click</code> attribute; for example to track clicks to an
 external link as <code>ext-example.com</code>:</p>
 
@@ -30,8 +26,8 @@ external link as <code>ext-example.com</code>:</p>
 &lt;a href="https://example.com" data-goatcounter-click="ext-example.com"&gt;Example&lt;/a&gt;
 </pre>
 
-<p>The <code>href</code> attribute will be used if
-<code>data-goatcounter-click</code> is empty.</p>
+<p>The <code>name</code>, <code>id</code>, or <code>href</code> attribute will
+be used if <code>data-goatcounter-click</code> is empty, in that order.</p>
 
 <p>You can use <code>data-goatcounter-title</code> and
 <code>data-goatcounter-referral</code> to set the title and/or referral:</p>
@@ -41,10 +37,9 @@ external link as <code>ext-example.com</code>:</p>
    data-goatcounter-referral="hello"&gt;Example&lt;/a&gt;
 </pre>
 
-<p>The regular <code>title</code> attribute is used if
-<code>data-goatcounter-title</code> is empty, and the
-<code>document.referrer</code> is used if <code>data-goatcounter-referrer</code>
-is empty.</p>
+<p>The regular <code>title</code> attribute or the element’s HTML (capped to 200
+characters) is used if <code>data-goatcounter-title</code> is empty. There is
+no default for the referrer.
 
 <h2 id="customizing">Customizing <a href="#customizing"></a></h2>
 <p>Customisation is done with the <code>window.goatcounter</code> object; the
@@ -72,7 +67,9 @@ is sent to the server. Nothing is sent if the return value from the
 <ul>
 	<li><code>path</code> – Page path (without domain) or event name.
 		Default is the value of <code>&lt;link rel="canonical"&gt;</code> if it exists,
-		or <code>location.pathname + location.search</code>.</li>
+		or <code>location.pathname + location.search</code>.
+		This is used as the event name if <code>event</code> is
+		<code>true</code>.</li>
 
 	<li><code>title</code> – Human-readable title. Default is
 		<code>document.title</code>.</li>
@@ -211,9 +208,10 @@ parameters:</p>
 <p>You can send an event by setting the <code>event</code> parameter to
 <code>true</code> in <code>count()</code>. For example:</p>
 
-<pre>$('a').on('click', function(e) {
+<pre>$('#banana').on('click', function(e) {
 	window.goatcounter.count({
-		path:  $(this).attr('href'),
+		path:  'click-banana',
+		title: 'Yellow curvy fruit',
 		event: true,
 	});
 })</pre>
@@ -236,7 +234,7 @@ without JavaScript.</p>
 
 <h3 id="middleware">From middleware <a href="#middleware"></a></h3>
 <p>You can call <code>GET {{.Site.URL}}/count</code> from anywhere, such as your
-app's middleware. It supports the following query parameters:</p>
+app’s middleware. It supports the following query parameters:</p>
 
 <ul>
 	<li><code>p</code> – <code>path</code></li>
@@ -244,6 +242,8 @@ app's middleware. It supports the following query parameters:</p>
 	<li><code>t</code> – <code>title</code></li>
 	<li><code>r</code> – <code>referrer</code></li>
 	<li><code>s</code> – screen size, as <code>x,y,scaling</code>.</li>
+	<li><code>rnd</code> – can be used as a “cache buster” since browsers don’t
+		always obey <code>Cache-Control</code>; ignored by the backend.</li>
 </ul>
 
 <p>The <code>User-Agent</code> header and remote address are used for the

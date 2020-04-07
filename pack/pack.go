@@ -2074,12 +2074,12 @@ h1 a:after, h2 a:after, h3 a:after, h4 a:after, h5 a:after, h6 a:after {
 		window.goatcounter = window.goatcounter || {}
 
 	// Get all data we're going to send off to the counter endpoint.
-	var get_data = function(count_vars) {
+	var get_data = function(vars) {
 		var data = {
-			p: count_vars.path     || goatcounter.path,
-			r: count_vars.referrer || goatcounter.referrer,
-			t: count_vars.title    || goatcounter.title,
-			e: !!(count_vars.event || goatcounter.event),
+			p: (vars.path     === undefined ? goatcounter.path     : vars.path),
+			r: (vars.referrer === undefined ? goatcounter.referrer : vars.referrer),
+			t: (vars.title    === undefined ? goatcounter.title    : vars.title),
+			e: !!(vars.event || goatcounter.event),
 			s: [window.screen.width, window.screen.height, (window.devicePixelRatio || 1)],
 		}
 
@@ -2119,7 +2119,7 @@ h1 a:after, h2 a:after, h3 a:after, h4 a:after, h5 a:after, h6 a:after {
 	}
 
 	// Count a hit.
-	window.goatcounter.count = function(count_vars) {
+	window.goatcounter.count = function(vars) {
 		if ('visibilityState' in document && document.visibilityState === 'prerender')
 			return
 		if (!goatcounter.allow_local && location.hostname.match(/(localhost$|^127\.|^10\.|^172\.(1[6-9]|2[0-9]|3[0-1])\.|^192\.168\.)/))
@@ -2130,7 +2130,7 @@ h1 a:after, h2 a:after, h3 a:after, h4 a:after, h5 a:after, h6 a:after {
 		if (script)
 			endpoint = script.dataset.goatcounter
 
-		var data = get_data(count_vars || {})
+		var data = get_data(vars || {})
 		if (data.p === null)  // null from user callback.
 			return
 
@@ -2162,8 +2162,8 @@ h1 a:after, h2 a:after, h3 a:after, h4 a:after, h5 a:after, h6 a:after {
 			var send = function() {
 				goatcounter.count({
 					event:    true,
-					path:     (elem.dataset.goatcounterClick || elem.href || ''),
-					title:    (elem.dataset.goatcounterTitle || elem.title || ''),
+					path:     (elem.dataset.goatcounterClick || elem.name || elem.id || elem.href || ''),
+					title:    (elem.dataset.goatcounterTitle || elem.title || (elem.innerHTML || '').substr(0, 200) || ''),
 					referral: (elem.dataset.goatcounterReferral || ''),
 				})
 			}
@@ -13361,7 +13361,7 @@ form .err  { color: red; display: block; }
 	word-break: break-all; /* don't make it wider for very long urls */
 }
 
-.event { background-color: #f6f3da; border-radius: 1em; padding: .1em .3em; }
+.label-event { background-color: #f6f3da; border-radius: 1em; padding: .1em .3em; }
 
 /* Otherwise .page-title has different vertical alignment? Hmmm... */
 .show-mobile .page-title { vertical-align: top; }
@@ -14667,14 +14667,14 @@ var Templates = map[string][]byte{
 		<td class="hide-mobile">
 			<a class="rlink" title="{{$h.Path}}" href="?showrefs={{$h.Path}}&period-start={{tformat $.Site $.PeriodStart ""}}&period-end={{tformat $.Site $.PeriodEnd ""}}#{{$h.Path}}">{{$h.Path}}</a><br>
 			<small class="page-title {{if not $h.Title}}no-title{{end}}" title="{{$h.Title}}">{{if $h.Title}}{{$h.Title}}{{else}}<em>(no title)</em>{{end}}</small>
-			{{if $h.Event}}<sup class="event">event</sup>{{end}}
+			{{if $h.Event}}<sup class="label-event">event</sup>{{end}}
 			{{if and $.Site.LinkDomain (not $h.Event)}}<sup><a class="go" target="_blank" rel="noopener" href="https://{{$.Site.LinkDomain}}{{$h.Path}}">go</a></sup>{{end}}
 		</td>
 		<td>
 			<div class="show-mobile">
 				<a class="rlink" href="?showrefs={{$h.Path}}&period-start={{tformat $.Site $.PeriodStart ""}}&period-end={{tformat $.Site $.PeriodEnd ""}}#{{$h.Path}}">{{$h.Path}}</a>
 				<small class="page-title {{if not $h.Title}}no-title{{end}}" title="{{$h.Title}}">| {{if $h.Title}}{{$h.Title}}{{else}}<em>(no title)</em>{{end}}</small>
-				{{if $h.Event}}<sup class="event">event</sup>{{end}}
+				{{if $h.Event}}<sup class="label-event">event</sup>{{end}}
 				{{if and $.Site.LinkDomain (not $h.Event)}}<sup><a class="go" target="_blank" rel="noopener" href="https://{{$.Site.LinkDomain}}{{$h.Path}}">go</a></sup>{{end}}
 			</div>
 			<div class="chart chart-bar">
@@ -14735,11 +14735,7 @@ img-src     {{.Site.URL}}/count
 </pre>
 
 <h2 id="events">Events <a href="#events"></a></h2>
-<p>You can send data as events instead of pageviews; event are shown in the
-overview but not counted in the browser, screen size, location, or top referral
-stats.</p>
-
-<p>GoatCounter will automatically bind a click event on every element with the
+<p>GoatCounter will automatically bind a click event on any element with the
 <code>data-goatcounter-click</code> attribute; for example to track clicks to an
 external link as <code>ext-example.com</code>:</p>
 
@@ -14747,8 +14743,8 @@ external link as <code>ext-example.com</code>:</p>
 &lt;a href="https://example.com" data-goatcounter-click="ext-example.com"&gt;Example&lt;/a&gt;
 </pre>
 
-<p>The <code>href</code> attribute will be used if
-<code>data-goatcounter-click</code> is empty.</p>
+<p>The <code>name</code>, <code>id</code>, or <code>href</code> attribute will
+be used if <code>data-goatcounter-click</code> is empty, in that order.</p>
 
 <p>You can use <code>data-goatcounter-title</code> and
 <code>data-goatcounter-referral</code> to set the title and/or referral:</p>
@@ -14758,10 +14754,9 @@ external link as <code>ext-example.com</code>:</p>
    data-goatcounter-referral="hello"&gt;Example&lt;/a&gt;
 </pre>
 
-<p>The regular <code>title</code> attribute is used if
-<code>data-goatcounter-title</code> is empty, and the
-<code>document.referrer</code> is used if <code>data-goatcounter-referrer</code>
-is empty.</p>
+<p>The regular <code>title</code> attribute or the element’s HTML (capped to 200
+characters) is used if <code>data-goatcounter-title</code> is empty. There is
+no default for the referrer.
 
 <h2 id="customizing">Customizing <a href="#customizing"></a></h2>
 <p>Customisation is done with the <code>window.goatcounter</code> object; the
@@ -14789,7 +14784,9 @@ is sent to the server. Nothing is sent if the return value from the
 <ul>
 	<li><code>path</code> – Page path (without domain) or event name.
 		Default is the value of <code>&lt;link rel="canonical"&gt;</code> if it exists,
-		or <code>location.pathname + location.search</code>.</li>
+		or <code>location.pathname + location.search</code>.
+		This is used as the event name if <code>event</code> is
+		<code>true</code>.</li>
 
 	<li><code>title</code> – Human-readable title. Default is
 		<code>document.title</code>.</li>
@@ -14928,9 +14925,10 @@ parameters:</p>
 <p>You can send an event by setting the <code>event</code> parameter to
 <code>true</code> in <code>count()</code>. For example:</p>
 
-<pre>$('a').on('click', function(e) {
+<pre>$('#banana').on('click', function(e) {
 	window.goatcounter.count({
-		path:  $(this).attr('href'),
+		path:  'click-banana',
+		title: 'Yellow curvy fruit',
 		event: true,
 	});
 })</pre>
@@ -14953,7 +14951,7 @@ without JavaScript.</p>
 
 <h3 id="middleware">From middleware <a href="#middleware"></a></h3>
 <p>You can call <code>GET {{.Site.URL}}/count</code> from anywhere, such as your
-app's middleware. It supports the following query parameters:</p>
+app’s middleware. It supports the following query parameters:</p>
 
 <ul>
 	<li><code>p</code> – <code>path</code></li>
@@ -14961,6 +14959,8 @@ app's middleware. It supports the following query parameters:</p>
 	<li><code>t</code> – <code>title</code></li>
 	<li><code>r</code> – <code>referrer</code></li>
 	<li><code>s</code> – screen size, as <code>x,y,scaling</code>.</li>
+	<li><code>rnd</code> – can be used as a “cache buster” since browsers don’t
+		always obey <code>Cache-Control</code>; ignored by the backend.</li>
 </ul>
 
 <p>The <code>User-Agent</code> header and remote address are used for the
