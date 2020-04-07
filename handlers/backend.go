@@ -31,6 +31,7 @@ import (
 	"zgo.at/tz"
 	"zgo.at/utils/httputilx/header"
 	"zgo.at/utils/sliceutil"
+	"zgo.at/utils/sqlutil"
 	"zgo.at/zdb"
 	"zgo.at/zhttp"
 	"zgo.at/zhttp/zmail"
@@ -206,6 +207,15 @@ func (h backend) status() func(w http.ResponseWriter, r *http.Request) error {
 	}
 }
 
+type countRequest struct {
+	Path   string            `json:"p,omitempty"`
+	Title  string            `json:"t,omitempty"`
+	Ref    string            `json:"r,omitempty"`
+	Event  *string           `json:"e,omitempty"`
+	Size   sqlutil.FloatList `json:"s,omitempty"`
+	Random string            `json:"rnd,omitempty"`
+}
+
 func (h backend) count(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-Type", "image/gif")
@@ -226,22 +236,28 @@ func (h backend) count(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
+	var args countRequest
+	_, err := zhttp.Decode(r, &args)
+	if err != nil {
+		w.Header().Add("X-Goatcounter", fmt.Sprintf("error decoding parameters: %s", err))
+		w.WriteHeader(400)
+		return zhttp.Bytes(w, gif)
+	}
+
 	hit := goatcounter.Hit{
 		Site:        site.ID,
 		Browser:     r.UserAgent(),
 		Location:    geo(r.RemoteAddr),
 		UsageDomain: r.Referer(),
 		CreatedAt:   goatcounter.Now(),
+		Path:        args.Path,
+		Title:       args.Title,
+		Ref:         args.Ref,
+		Event:       args.Event,
+		Size:        args.Size,
 	}
 	if isbot.Is(bot) {
 		hit.Bot = int(bot)
-	}
-
-	_, err := zhttp.Decode(r, &hit)
-	if err != nil {
-		w.Header().Add("X-Goatcounter", fmt.Sprintf("error decoding parameters: %s", err))
-		w.WriteHeader(400)
-		return zhttp.Bytes(w, gif)
 	}
 
 	// TODO: move to memstore?

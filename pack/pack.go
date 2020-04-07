@@ -757,6 +757,29 @@ commit;
 	insert into version values ('2020-03-29-1-page_cost');
 commit;
 `),
+	"db/migrate/pgsql/2020-04-09-1-evname.sql": []byte(`begin;
+	create index "hits#event" on hits(event);
+
+	alter table hits
+		add column event2 varchar default null;
+
+	update hits set event2=path, path='/' where event='1';
+
+	alter table hits drop column event
+	alter table alter column event2 rename to event;
+
+--	alter column event type varchar;
+--	alter table hits alter column event set default null;
+--
+--	update hits set event=path, path='/' where event='1';
+--	update hits set event=null where event='0';
+
+	drop index "hits#event";
+
+	insert into version values ('2020-04-09-1-evname');
+commit;
+
+`),
 }
 
 var MigrationsSQLite = map[string][]byte{
@@ -1546,6 +1569,38 @@ commit;
 commit;
 `),
 	"db/migrate/sqlite/2020-03-27-1-isbot.sql": []byte(``),
+	"db/migrate/sqlite/2020-04-09-1-evname.sql": []byte(`begin;
+	create table hits2 (
+		id             integer        primary key autoincrement,
+		site           integer        not null                 check(site > 0),
+		session        integer        default null,
+		started_session integer        default 0,
+
+		path           varchar        not null,
+		title          varchar        not null default '',
+		event          varchar        null,
+		bot            int            default 0,
+		ref            varchar        not null,
+		ref_original   varchar,
+		ref_params     varchar,
+		ref_scheme     varchar        null                     check(ref_scheme in ('h', 'g', 'o')),
+		browser        varchar        not null,
+		size           varchar        not null default '',
+		location       varchar        not null default '',
+
+		created_at     timestamp      not null                 check(created_at = strftime('%Y-%m-%d %H:%M:%S', created_at))
+	);
+
+	insert into hits2 select * from hits;
+	drop table hits;
+	alter table hits2 rename to hits;
+
+	update hits set event=path, path='/' where event='1';
+	update hits set event=null where event='0';
+
+	insert into version values ('2020-04-09-1-evname');
+commit;
+`),
 }
 
 var Public = map[string][]byte{
@@ -2059,9 +2114,10 @@ h1 a:after, h2 a:after, h3 a:after, h4 a:after, h5 a:after, h6 a:after {
 			p: count_vars.path     || goatcounter.path,
 			r: count_vars.referrer || goatcounter.referrer,
 			t: count_vars.title    || goatcounter.title,
-			e: !!(count_vars.event || goatcounter.event),
+			e: count_vars.event    || goatcounter.event,
 			s: [window.screen.width, window.screen.height, (window.devicePixelRatio || 1)],
 		}
+		if (data.e === true) data.e = data.e
 
 		var rcb, pcb, tcb  // Save callbacks to apply later.
 		if (typeof(data.r) === 'function') rcb = data.r
@@ -2111,6 +2167,7 @@ h1 a:after, h2 a:after, h3 a:after, h4 a:after, h5 a:after, h6 a:after {
 			endpoint = script.dataset.goatcounter
 
 		var data = get_data(count_vars || {})
+-		data.rnd = Math.random().toString(36).substr(2, 5)  // Browsers don't always listen to Cache-Control.
 		if (data.p === null)  // null from user callback.
 			return
 
@@ -14750,10 +14807,18 @@ is <code>null</code>.</p>
     </tr>
     <tr>
       <td style="text-align: left"><code>event</code></td>
-      <td style="text-align: left">Treat the <code>path</code> as an event, rather than a URL. Boolean.</td>
+      <td style="text-align: left">Event name; if set to a string value then this will be counted as an event, rather than a pageview.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code>rnd</code></td>
+      <td style="text-align: left">Can be used as a “cache buster” since browsers don’t always obey <code>Cache-Control</code>; ignored by the backend.</td>
     </tr>
   </tbody>
 </table>
+
+<p>Backwards compatibility note: if <code>event</code> is boolean <code>true</code>, then the <code>path</code> will
+be used as the event name (and <code>path</code> will be blank. Do <em>not</em> use this in new
+code.</p>
 
 <h3 id="methods">Methods <a href="#methods"></a></h3>
 
@@ -14896,7 +14961,7 @@ out).</p>
 <p>Wrap in a <code>&lt;noscript&gt;</code> tag to use this only for people without JavaScript.</p>
 
 <h3 id="from-middleware">From middleware <a href="#from-middleware"></a></h3>
-<p>You can call <code>GET {{.Site.URL}}/count</code> from anywhere, such as your app's
+<p>You can call <code>GET {{.Site.URL}}/count</code> from anywhere, such as your app’s
 middleware. It supports the following query parameters:</p>
 
 <ul>

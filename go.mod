@@ -2,6 +2,8 @@ module zgo.at/goatcounter
 
 go 1.13
 
+replace zgo.at/ztest => ../ztest
+
 require (
 	github.com/PuerkitoBio/goquery v1.5.1
 	github.com/arp242/geoip2-golang v1.4.0

@@ -51,9 +51,9 @@ func TestBackendCount(t *testing.T) {
 			Path: "/foo.html",
 		}},
 
-		{"event", url.Values{"p": {"foo.html"}, "e": {"true"}}, 200, goatcounter.Hit{
+		{"event", url.Values{"p": {"foo.html"}, "e": {"ev-name"}}, 200, goatcounter.Hit{
 			Path:  "foo.html",
-			Event: true,
+			Event: ztest.SP("ev-name"),
 		}},
 
 		{"params", url.Values{"p": {"/foo.html?a=b&c=d"}}, 200, goatcounter.Hit{
@@ -129,13 +129,14 @@ func TestBackendCount(t *testing.T) {
 				t.Errorf("Validate failed after get: %s", err)
 			}
 
-			one := int64(1)
 			tt.hit.ID = h.ID
 			tt.hit.Site = h.Site
 			tt.hit.CreatedAt = goatcounter.Now()
-			tt.hit.Session = &one // Should all be the same session.
+			tt.hit.Session = ztest.I64P(1)
+			tt.hit.StartedSession = true // new DB on every run, so new hash.
 			h.CreatedAt = h.CreatedAt.In(time.UTC)
-			if d := ztest.Diff(h.String(), tt.hit.String()); d != "" {
+
+			if d := ztest.Diff(ztest.JSON(h), ztest.JSON(tt.hit)); d != "" {
 				t.Error(d)
 			}
 		})

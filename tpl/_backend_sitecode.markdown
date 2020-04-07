@@ -43,7 +43,12 @@ is `null`.
 | `path`     | Page path (without domain) or event name. Default is the value of `<link rel="canonical">` if it exists, or `location.pathname + location.search`. |
 | `title`    | Human-readable title. Default is `document.title`.                                                                                                 |
 | `referrer` | Where the user came from; can be an URL (`https://example.com`) or any string (`June Newsletter`). Default is to use the `Referer` header.         |
-| `event`    | Treat the `path` as an event, rather than a URL. Boolean.                                                                                          |
+| `event`    | Event name; if set to a string value then this will be counted as an event, rather than a pageview.                                                |
+| `rnd`      | Can be used as a “cache buster” since browsers don’t always obey `Cache-Control`; ignored by the backend.                                          |
+
+Backwards compatibility note: if `event` is boolean `true`, then the `path` will
+be used as the event name (and `path` will be blank. Do *not* use this in new
+code.
 
 ### Methods
 
@@ -179,7 +184,7 @@ out).
 Wrap in a `<noscript>` tag to use this only for people without JavaScript.
 
 ### From middleware
-You can call `GET {{.Site.URL}}/count` from anywhere, such as your app's
+You can call `GET {{.Site.URL}}/count` from anywhere, such as your app’s
 middleware. It supports the following query parameters:
 
 - `p` → `path`

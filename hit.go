@@ -5,14 +5,12 @@
 package goatcounter
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"net/url"
 	"sort"
 	"strconv"
 	"strings"
-	"text/tabwriter"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -35,27 +33,27 @@ var (
 )
 
 type Hit struct {
-	ID      int64  `db:"id" json:"-"`
-	Site    int64  `db:"site" json:"-"`
-	Session *int64 `db:"session" json:"-"`
+	ID      int64  `db:"id"`
+	Site    int64  `db:"site"`
+	Session *int64 `db:"session"`
 
-	Path  string            `db:"path" json:"p,omitempty"`
-	Title string            `db:"title" json:"t,omitempty"`
-	Ref   string            `db:"ref" json:"r,omitempty"`
-	Event bool              `db:"event" json:"e,omitempty"`
-	Size  sqlutil.FloatList `db:"size" json:"s,omitempty"`
+	Path  string            `db:"path"`
+	Title string            `db:"title"`
+	Ref   string            `db:"ref"`
+	Event *string           `db:"event"`
+	Size  sqlutil.FloatList `db:"size"`
 
-	RefParams      *string   `db:"ref_params" json:"-"`
-	RefOriginal    *string   `db:"ref_original" json:"-"`
-	RefScheme      *string   `db:"ref_scheme" json:"-"`
-	Browser        string    `db:"browser" json:"-"`
-	Location       string    `db:"location" json:"-"`
-	StartedSession bool      `db:"started_session" json:"-"`
-	Bot            int       `db:"bot" json:"-"`
-	CreatedAt      time.Time `db:"created_at" json:"-"`
+	RefParams      *string   `db:"ref_params"`
+	RefOriginal    *string   `db:"ref_original"`
+	RefScheme      *string   `db:"ref_scheme"`
+	Browser        string    `db:"browser"`
+	Location       string    `db:"location"`
+	StartedSession bool      `db:"started_session"`
+	Bot            int       `db:"bot"`
+	CreatedAt      time.Time `db:"created_at"`
 
-	RefURL      *url.URL `db:"-" json:"-"` // Parsed Ref
-	UsageDomain string   `db:"-" json:"-"` // Track referrer for usage.
+	RefURL      *url.URL `db:"-"` // Parsed Ref
+	UsageDomain string   `db:"-"` // Track referrer for usage.
 }
 
 var groups = map[string]string{
@@ -225,44 +223,6 @@ func cleanPath(path string) string {
 	return u.String()
 }
 
-func (h Hit) String() string {
-	b := new(bytes.Buffer)
-	t := tabwriter.NewWriter(b, 8, 8, 2, ' ', 0)
-	fmt.Fprintf(t, "ID\t%d\n", h.ID)
-	fmt.Fprintf(t, "Site\t%d\n", h.Site)
-	if h.Session == nil {
-		fmt.Fprintf(t, "Session\t<nil>\n")
-	} else {
-		fmt.Fprintf(t, "Session\t%d\n", *h.Session)
-	}
-	fmt.Fprintf(t, "Path\t%q\n", h.Path)
-	fmt.Fprintf(t, "Title\t%q\n", h.Title)
-	fmt.Fprintf(t, "Ref\t%q\n", h.Ref)
-	fmt.Fprintf(t, "Event\t%t\n", h.Event)
-	if h.RefParams == nil {
-		fmt.Fprintf(t, "RefParams\t<nil>\n")
-	} else {
-		fmt.Fprintf(t, "RefParams\t%q\n", *h.RefParams)
-	}
-	if h.RefOriginal == nil {
-		fmt.Fprintf(t, "RefOriginal\t<nil>\n")
-	} else {
-		fmt.Fprintf(t, "RefOriginal\t%q\n", *h.RefOriginal)
-	}
-	if h.RefScheme == nil {
-		fmt.Fprintf(t, "RefScheme\t<nil>\n")
-	} else {
-		fmt.Fprintf(t, "RefScheme\t%q\n", *h.RefScheme)
-	}
-	fmt.Fprintf(t, "Browser\t%q\n", h.Browser)
-	fmt.Fprintf(t, "Size\t%q\n", h.Size)
-	fmt.Fprintf(t, "Location\t%q\n", h.Location)
-	fmt.Fprintf(t, "Bot\t%d\n", h.Bot)
-	fmt.Fprintf(t, "CreatedAt\t%s\n", h.CreatedAt)
-	t.Flush()
-	return b.String()
-}
-
 // Defaults sets fields to default values, unless they're already set.
 func (h *Hit) Defaults(ctx context.Context) {
 	if s := GetSite(ctx); s != nil && s.ID > 0 { // Not set from memstore.
@@ -273,7 +233,7 @@ func (h *Hit) Defaults(ctx context.Context) {
 		h.CreatedAt = Now()
 	}
 
-	if !h.Event {
+	if !h.IsEvent() {
 		h.Path = cleanPath(h.Path)
 	}
 
@@ -296,7 +256,7 @@ func (h *Hit) Defaults(ctx context.Context) {
 		}
 	}
 	h.Ref = strings.TrimRight(h.Ref, "/")
-	if !h.Event {
+	if !h.IsEvent() {
 		h.Path = "/" + strings.Trim(h.Path, "/")
 	}
 }
@@ -320,6 +280,10 @@ func (h *Hit) Validate(ctx context.Context) error {
 	v.Len("browser", h.Browser, 0, 512)
 
 	return v.ErrorOrNil()
+}
+
+func (h Hit) IsEvent() bool {
+	return h.Event != nil
 }
 
 type Hits []Hit

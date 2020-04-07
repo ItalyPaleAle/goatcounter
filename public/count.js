@@ -13,9 +13,10 @@
 			p: count_vars.path     || goatcounter.path,
 			r: count_vars.referrer || goatcounter.referrer,
 			t: count_vars.title    || goatcounter.title,
-			e: !!(count_vars.event || goatcounter.event),
+			e: count_vars.event    || goatcounter.event,
 			s: [window.screen.width, window.screen.height, (window.devicePixelRatio || 1)],
 		}
+		if (data.e === true) data.e = data.e
 
 		var rcb, pcb, tcb  // Save callbacks to apply later.
 		if (typeof(data.r) === 'function') rcb = data.r
@@ -65,6 +66,7 @@
 			endpoint = script.dataset.goatcounter
 
 		var data = get_data(count_vars || {})
+-		data.rnd = Math.random().toString(36).substr(2, 5)  // Browsers don't always listen to Cache-Control.
 		if (data.p === null)  // null from user callback.
 			return
 

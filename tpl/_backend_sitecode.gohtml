@@ -75,10 +75,18 @@ is <code>null</code>.</p>
     </tr>
     <tr>
       <td style="text-align: left"><code>event</code></td>
-      <td style="text-align: left">Treat the <code>path</code> as an event, rather than a URL. Boolean.</td>
+      <td style="text-align: left">Event name; if set to a string value then this will be counted as an event, rather than a pageview.</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><code>rnd</code></td>
+      <td style="text-align: left">Can be used as a “cache buster” since browsers don’t always obey <code>Cache-Control</code>; ignored by the backend.</td>
     </tr>
   </tbody>
 </table>
+
+<p>Backwards compatibility note: if <code>event</code> is boolean <code>true</code>, then the <code>path</code> will
+be used as the event name (and <code>path</code> will be blank. Do <em>not</em> use this in new
+code.</p>
 
 <h3 id="methods">Methods <a href="#methods"></a></h3>
 
@@ -221,7 +229,7 @@ out).</p>
 <p>Wrap in a <code>&lt;noscript&gt;</code> tag to use this only for people without JavaScript.</p>
 
 <h3 id="from-middleware">From middleware <a href="#from-middleware"></a></h3>
-<p>You can call <code>GET {{.Site.URL}}/count</code> from anywhere, such as your app's
+<p>You can call <code>GET {{.Site.URL}}/count</code> from anywhere, such as your app’s
 middleware. It supports the following query parameters:</p>
 
 <ul>
